@@ -1,154 +1,264 @@
-# Enhanced Sokoban: Procedural Content Generation and AI Agents
+# Enhanced Sokoban: Procedural Generation and Search Agents
 
-A comprehensive implementation of the classic puzzle game Sokoban, featuring procedural level generation, intelligent hint systems, and AI solving agents.
+A Python and Pygame project exploring procedural content generation and
+search-based agents for Sokoban.
 
-## Project Overview
+The project extends a Sokoban game with randomized puzzle generation,
+solvability checks, deadlock detection, interactive hints, and automated
+solution playback.
 
-This project enhances the traditional Sokoban puzzle game with three key innovations:
+Developed as a group project for the Gaming AI course at Leiden University.
 
-1. **Procedural Content Generation (PCG)** - A hybrid system that creates diverse, solvable levels across three difficulty tiers (easy, medium, hard)
-2. **Intelligent Hint Mechanism** - A dynamic guidance system that adapts to player moves and provides real-time solution paths
-3. **AI Solving Agents** - Two distinct approaches to automated puzzle solving:
-   - Heuristic agent based on breadth-first search
-   - Monte Carlo Tree Search (MCTS) agent
+## Overview
+
+Sokoban is a grid-based puzzle in which the player pushes boxes onto target
+positions. Boxes can be pushed but cannot be pulled, making planning and
+deadlock avoidance central to solving a level.
+
+This project explores two related tasks:
+
+- Generating varied puzzles and checking whether a solution can be found.
+- Using search algorithms to produce and execute sequences of moves.
+
+The repository includes an interactive game, a BFS-based agent, and an
+agent implementation that combines a BFS-first strategy with an MCTS fallback.
 
 ## Features
 
 ### Procedural Level Generation
-- Hybrid approach combining constructive and search-based methods
-- Guaranteed solvability through breadth-first search verification
-- Sophisticated deadlock detection (simple, freeze, and corral deadlocks)
-- Difficulty scaling based on solution length and complexity
-- Fallback mechanism with pre-designed levels
 
-### Hint System
-- Dynamic solution path generation
-- Real-time adaptation to player moves
-- Step-by-step guidance
-- Visual highlighting of suggested moves
+The generator combines randomized layouts, reverse-play construction,
+and validation.
 
-### AI Agents
-- **Heuristic Agent**:
-  - Breadth-first search with optimization
-  - Deadlock detection for early termination
-  - Memory-efficient state representation
-  
-- **MCTS Agent**:
-  - Simulation-based planning
-  - Balanced exploration and exploitation
-  - Heuristic evaluation for node selection
+The current configuration generates candidate boards with:
 
-### Game Implementation
-- Character-based matrix representation
-- Clean separation between game logic and presentation
-- Traditional Sokoban movement mechanics
-- Undo functionality and state tracking
+- Between 7 and 10 rows and columns.
+- Between 1 and 3 boxes.
+- Randomized internal walls.
+- Connectivity and level-validity checks.
+- BFS-based solvability verification.
+- Predefined fallback levels when generation attempts are exhausted.
 
-## Technical Implementation
+Generation is bounded by attempt and search limits. Fallback boards may
+differ from the dimensions used for randomly generated candidates.
 
-### Game Structure
-- **Level Class**: Manages game state, history, and validation
-- **Environment Class**: Handles rendering and user interface
-- **PCG System**: Generates and verifies puzzle levels
-- **Solver Classes**: Implements AI agents and hint generation
+### Search and Deadlock Detection
 
-### Deadlock Detection
-The system detects three types of deadlocks:
-1. **Simple Deadlocks**: Boxes pushed into corners or against walls
-2. **Freeze Deadlocks**: Boxes forming immovable patterns
-3. **Corral Deadlocks**: Complex configurations where boxes block each other
+The shared BFS solver explores reachable puzzle states and records move
+sequences.
 
-### Algorithms
-- Breadth-First Search (BFS) for level verification and heuristic solving
-- Monte Carlo Tree Search (MCTS) for advanced AI agent
-- Reverse BFS for deadlock detection
+The code includes checks for:
+
+- Simple deadlocks.
+- Freeze deadlocks.
+- Corral deadlocks.
+
+These checks support generation and search by identifying problematic
+box configurations.
+
+### Interactive Gameplay
+
+The Pygame interface provides:
+
+- Keyboard movement.
+- Undo and restart.
+- Generation of new puzzles.
+- Solution-based hints.
+- Theme switching.
+
+The hint system can recompute a solution from the current state. If recovery
+fails, its handling may reset or replace the puzzle.
+
+### Automated Agents
+
+| Agent | Implementation |
+|---|---|
+| BFS agent | `heuristic_agent.py` calls the shared BFS solver and plays back the returned moves. |
+| BFS-first/MCTS agent | `mcts_agent.py` first attempts BFS, then uses MCTS if BFS returns no solution. |
+
+The MCTS implementation includes tree selection, expansion, random
+simulations, reward propagation, and exploration–exploitation balancing.
+
+Despite its filename, `heuristic_agent.py` uses BFS rather than A*.
+Likewise, `mcts_agent.py` is not a standalone MCTS-only baseline because
+it attempts BFS first.
+
+## Repository Files
+
+| File | Purpose |
+|---|---|
+| `sokoban.py` | Interactive game and keyboard controls |
+| `pcg_generator.py` | Level generation, validation, deadlock checks, and BFS solver |
+| `heuristic_agent.py` | BFS-based agent and visual solution playback |
+| `mcts_agent.py` | BFS-first agent with an MCTS fallback |
+| `Level.py` | Level representation, state history, reset, and solution tracking |
+| `Environment.py` | Pygame initialization, display, and resource paths |
+| `README_RUN_INSTRUCTIONS.md` | Additional run notes; some controls describe an earlier version |
+| `pySokoban_Enhanced_Final.zip` | Packaged project archive |
+| `LICENSE` | GNU General Public License, version 2 |
 
 ## Requirements
 
-- Python 3.7+
-- Pygame 2.0+
-- NumPy
-- OpenAI Gym (for additional agent testing)
+- Python 3; the supplied run notes identify Python 3.11 as a tested version.
+- Pygame.
+- A graphical desktop environment.
+- Theme image assets for rendering.
 
-## Installation
+The visible Python source files use Pygame and Python's standard library.
+NumPy and OpenAI Gym are not required by these files.
+
+## Setup
+
+Clone the repository:
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/enhanced-sokoban.git
-cd enhanced-sokoban
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the game
-python main.py
+git clone https://github.com/Praneeth-496/Enhanced-Sokoban-Procedural-Content-Generation-and-AI-Agents.git
+cd Enhanced-Sokoban-Procedural-Content-Generation-and-AI-Agents
 ```
 
-## Usage
+Optionally create a virtual environment:
 
-### Playing the Game
-- Arrow keys for movement
-- R to reset level
-- Z to undo move
-- H to request a hint
-- N to generate a new level
-- 1-3 to select difficulty (1=Easy, 2=Medium, 3=Hard)
-
-### Running AI Agents
 ```bash
-# Run the heuristic agent
-python run_agent.py --agent heuristic --level [level_file]
-
-# Run the MCTS agent
-python run_agent.py --agent mcts --level [level_file]
-
-# Compare agents
-python compare_agents.py --levels [level_directory]
+python -m venv .venv
 ```
 
-## Project Structure
+Activate it on Windows:
 
+```powershell
+.venv\Scripts\Activate.ps1
 ```
-enhanced-sokoban/
-├── src/
-│   ├── game/
-│   │   ├── level.py          # Level representation and mechanics
-│   │   ├── environment.py    # Game rendering and UI
-│   │   └── utils.py          # Helper functions
-│   ├── pcg/
-│   │   ├── generator.py      # Level generation algorithms
-│   │   ├── verifier.py       # Solvability checking
-│   │   └── deadlock.py       # Deadlock detection
-│   ├── agents/
-│   │   ├── heuristic.py      # BFS-based agent
-│   │   ├── mcts.py           # MCTS agent
-│   │   └── common.py         # Shared agent functionality
-│   └── hint/
-│       └── hint_system.py    # Dynamic hint generation
-├── assets/
-│   ├── themes/               # Visual themes
-│   └── levels/               # Pre-designed fallback levels
-├── tests/                    # Unit and integration tests
-├── main.py                   # Game entry point
-├── run_agent.py              # Script to run agents
-└── compare_agents.py         # Agent comparison tool
+
+Or on Linux/macOS:
+
+```bash
+source .venv/bin/activate
 ```
+
+Install Pygame:
+
+```bash
+python -m pip install pygame
+```
+
+### Required Rendering Assets
+
+The scripts expect theme images under paths such as:
+
+```text
+themes/default/images/wall.png
+themes/default/images/box.png
+themes/default/images/box_on_target.png
+themes/default/images/space.png
+themes/default/images/target.png
+themes/default/images/player.png
+```
+
+The configured theme names are `default`, `ksokoban`, and `soft`.
+
+The current repository root does not expose a `themes/` directory.
+Before launching the graphical programs, obtain the required assets and
+place them beside the Python files. Check the included project archive
+for the packaged resources.
+
+Installing Pygame alone does not resolve missing image files.
+
+## Running the Programs
+
+Once the required assets are available, run commands from the directory
+containing the Python files.
+
+### Interactive Game
+
+```bash
+python sokoban.py
+```
+
+### BFS-Based Agent
+
+```bash
+python heuristic_agent.py
+```
+
+### BFS-First Agent with MCTS Fallback
+
+```bash
+python mcts_agent.py
+```
+
+The agent scripts provide their own graphical execution loops.
+
+## Controls
+
+### Interactive Game
+
+| Key | Action |
+|---|---|
+| Arrow keys | Move the player |
+| `U` | Undo the previous move |
+| `R` | Restart the current level |
+| `N` | Generate a new level |
+| `H` | Apply a solution-based hint |
+| `T` | Cycle through themes |
+| Window close button | Exit |
+
+### Agent Windows
+
+| Key | Action |
+|---|---|
+| `N` | Generate a new level |
+| `T` | Cycle through themes |
+| `Esc` | Exit |
+
+The current interactive game does not implement the `1`, `2`, and `3`
+difficulty-selection keys described in older documentation.
+
+## Level Representation
+
+Levels use a character-based matrix:
+
+| Symbol | Meaning |
+|---|---|
+| `#` | Wall |
+| Space | Empty floor |
+| `@` | Player |
+| `$` | Box |
+| `.` | Goal |
+| `*` | Box on a goal |
+| `+` | Player on a goal |
+
+`Level.py` manages the board state, move history, reset behavior, and
+stored solution paths.
+
+## Limitations
+
+- BFS can become expensive as puzzle size and complexity increase.
+- Search limits mean that failure to find a solution does not prove a
+  puzzle is unsolvable.
+- MCTS rollout and iteration limits affect the returned move sequence;
+  it should not be assumed to solve every puzzle.
+- The BFS-first MCTS implementation requires modification before it can
+  support a controlled BFS-versus-MCTS comparison.
+- Graphical execution requires theme assets not exposed in the current
+  repository root.
+- The repository does not currently include an automated benchmark suite
+  or test directory.
 
 ## Authors
 
-- Jiameng Ma (s4255445)
-- Praneeth Dathu (s4174089)
-- SriVagdevi Viswanadha (s4417712)
-- Yesmina el Arkoubi (s2989018)
-- Gaurisankar Jayadas (s4374886)
-- Mulakkayala Sai Krishna Reddy (s4238206)
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+- Jiameng Ma
+- Praneeth Dathu
+- SriVagdevi Viswanadha
+- Yesmina el Arkoubi
+- Gaurisankar Jayadas
+- Mulakkayala Sai Krishna Reddy
 
 ## Acknowledgments
 
-- Original Sokoban concept by Hiroyuki Imabayashi
-- University of Leiden, Gaming AI course
+- The original Sokoban concept by Hiroyuki Imabayashi.
+- The pySokoban project on which this implementation builds.
+- The Gaming AI course at Leiden University.
 
+## License
+
+See [LICENSE](LICENSE), which contains the GNU General Public License,
+version 2.
